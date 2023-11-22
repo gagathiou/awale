@@ -1,40 +1,31 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#include "player.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Définition de la structure représentant la "classe"
-typedef struct {
-    // Déclaration des membres de la classe
-    char* pseudo;
-    char* password;
-    char* bio;
-    int state;
-    List* friends;
-    
-} Player;
-
-// Déclaration des fonctions associées à la "classe"
+// Fonction pour créer une instance de la "classe"
 Player* creer(char* name, char* pw){
+    Player* objet = (Player*)malloc(sizeof(Player));
 
-    Player* p;
-    p->pseudo=name;
-    p->password=pw;
-    p->bio="";
-    p->state=0;
-    p->friends=List.createList();
+    if (objet != NULL) {
+        objet->pseudo = name;
+        objet->password=pw;
+        objet->state=0;
+        objet->bio="";
+        List l;
+        objet->friends=l.createList();
 
-    return p;
-    
-}
-void Player_detruire(Player* objet){
-    free(Player->pseudo);
-    free(Player->bio);
-    free(Player->pw);
-    free(Player->friends)
-    free(Player);
+    }
 
-}
-void Player_afficher(Player* objet){
-    printf("pseudo : %s\npw : %s\nbio : %s\nstate : %i\n",Player->pseudo,Player->password,Player->bio,Player->state);
+    return objet;
 }
 
-#endif  // PLAYER_H
+// Fonction pour détruire une instance de la "classe"
+void detruire(Player* objet) {
+    free(objet);
+}
+
+// Fonction pour afficher les membres de la "classe"
+void afficher(Player* objet) {
+    printf("Psuedo : %s\nPw : %s\nBio : %s\nState : %i\n",objet->pseudo,objet->password,objet->bio,objet->state);
+}
