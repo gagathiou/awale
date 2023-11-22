@@ -20,8 +20,8 @@ typedef struct {
 } Player;
 
 // Déclaration des fonctions associées à la "classe"
-Player* creer(char* name, char* pw);
-void Player_detruire(Player* objet);
-void Player_afficher(Player* objet);
+Player* player_create(char* name, char* pw);
+void player_destroy(Player* objet);
+void player_print(Player* objet);
 
 #endif  // PLAYER_H

@@ -4,7 +4,7 @@
 #include <string.h>
 
 // Fonction pour créer une instance de la "classe"
-Player* creer(char* name, char* pw){
+Player* player_create(char* name, char* pw){
     Player* objet = (Player*)malloc(sizeof(Player));
 
     if (objet != NULL) {
@@ -12,8 +12,7 @@ Player* creer(char* name, char* pw){
         objet->password=pw;
         objet->state=0;
         objet->bio="";
-        List l;
-        objet->friends=l.createList();
+        objet->friends=createList();
 
     }
 
@@ -21,11 +20,11 @@ Player* creer(char* name, char* pw){
 }
 
 // Fonction pour détruire une instance de la "classe"
-void detruire(Player* objet) {
+void player_destroy(Player* objet) {
     free(objet);
 }
 
 // Fonction pour afficher les membres de la "classe"
-void afficher(Player* objet) {
+void player_print(Player* objet) {
     printf("Psuedo : %s\nPw : %s\nBio : %s\nState : %i\n",objet->pseudo,objet->password,objet->bio,objet->state);
 }
