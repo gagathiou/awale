@@ -59,10 +59,11 @@ void game_playMove(Game* game, int move, int playerId) {
             game->board[(move+i)%12]=0;
         }
     }
+    game->board[move]=0;
 }
 
 void game_printBoard(Game* game){
-    char* boardDisplay=(char*)malloc(sizeof(char)*60);
+    char* boardDisplay=(char*)malloc(sizeof(char)*70);
     for(int j=1;j>=0;j--){
 
     
@@ -71,7 +72,10 @@ void game_printBoard(Game* game){
         }
         strcat(boardDisplay," \n");
         for(int i=0;i<6;i++){
-            strcat(boardDisplay,"|"+game->board[i+6*j]);
+            strcat(boardDisplay,"|");
+            char* nb_seed=(char*)malloc(sizeof(char)*5);
+            sprintf(nb_seed,"%d",game->board[i+6*j]);
+            strcat(boardDisplay,nb_seed);
         }
         strcat(boardDisplay,"|\n");
     }

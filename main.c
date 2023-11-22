@@ -79,6 +79,27 @@ int main(){
             // Game* g=game_create(p,p2);
             // game_print(g);
             // player_destroy(p);
+
+            Player* p1=player_create("victor","ls");
+            Player* p2=player_create("agathe","autier");
+            Game* g=game_create(p1,p2);
+            int joueur=0;
+            
+            while(game_isFinished(g,joueur)==0){
+                
+                game_printBoard(g);
+                printf("quel coup jouer\n");
+                int coup;
+                scanf("%d",&coup);
+                while(game_isLegalMove(g,coup,joueur)){
+                    printf("mauvais coup, quel coup jouer\n");
+                    int coup;
+                    scanf("%d",&coup);
+                }
+                game_playMove(g,coup,joueur);
+
+                joueur=(joueur+1)%2;
+            }
         }else if(i==5){
             printf("You chose to disconnect, goodbye and see you soon on Awale.\n");
             menu = 4;
