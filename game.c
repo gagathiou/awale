@@ -36,14 +36,6 @@ void game_print(Game* objet) {
     printf("Score : %i\n",objet->scores[1]);
 }
 
-<<<<<<< HEAD
-void game_playMove(Game* game, int move) {
-    // nb_seed=game->board[move];
-    // for (int i=nb_seed;i>0;i--){
-    //     game->board[(move+i)%12]+=1;
-    // }
-=======
-
 //le player 1 joue toujours sur 0 1 2 3 4 5
 void game_playMove(Game* game, int move, int playerId) {
     int nb_seed=game->board[move];
@@ -56,7 +48,6 @@ void game_playMove(Game* game, int move, int playerId) {
             game->board[(move+i)%12]=0;
         }
     }
->>>>>>> 6669e665a63fd7cf5e106eedab43b6abd88c545e
 }
 
 void game_printBoard(Game* game){
