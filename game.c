@@ -47,7 +47,6 @@ void game_print(Game* objet) {
     printf("Score : %i\n",objet->scores[1]);
 }
 
-
 //le player 1 joue toujours sur 0 1 2 3 4 5
 void game_playMove(Game* game, int move, int playerId) {
     int nb_seed=game->board[move];
