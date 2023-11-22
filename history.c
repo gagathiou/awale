@@ -28,3 +28,7 @@ void history_print(History* objet){
     game_print(objet->game);
     printf("\n state : %d\n", objet->state);
 }
+
+void history_addMove(History* histo,int move){
+    list_insertFront(histo->moves,move);
+}

@@ -18,6 +18,7 @@ void game_print(Game* objet);
 void game_playMove(Game* game, int move, int playerId);
 bool game_isLegalMove(Game* game, int move, int playerId);
 void game_printBoard(Game* game); 
+int game_isFinished(Game* game,int playerId)
 
 
 #endif  // GAME_H

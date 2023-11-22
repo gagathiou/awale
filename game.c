@@ -2,15 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 
 // Fonction pour créer une instance de la "classe"
 Game* game_create(Player* player1,Player* player2){
     Game* objet = (Game*)malloc(sizeof(Game));
 
+    //génération de la seed en fonction de l'heure actuelle
+    srand(time(NULL));
+
     if (objet != NULL) {
-        objet->p1=player1;
-        objet->p2=player2;
+        //tirage au sort, le p1 est toujours premier à jouer
+        if(rand()%2==0){
+            objet->p1=player1;
+            objet->p2=player2;
+        }else{
+            objet->p2=player1;
+            objet->p1=player2;
+        }
+        
         for (int i=0;i<12;i++){
             objet->board[i]=4;
         }
@@ -36,13 +47,6 @@ void game_print(Game* objet) {
     printf("Score : %i\n",objet->scores[1]);
 }
 
-<<<<<<< HEAD
-void game_playMove(Game* game, int move) {
-    // nb_seed=game->board[move];
-    // for (int i=nb_seed;i>0;i--){
-    //     game->board[(move+i)%12]+=1;
-    // }
-=======
 
 //le player 1 joue toujours sur 0 1 2 3 4 5
 void game_playMove(Game* game, int move, int playerId) {
@@ -56,7 +60,6 @@ void game_playMove(Game* game, int move, int playerId) {
             game->board[(move+i)%12]=0;
         }
     }
->>>>>>> 6669e665a63fd7cf5e106eedab43b6abd88c545e
 }
 
 void game_printBoard(Game* game){
@@ -82,13 +85,78 @@ void game_printBoard(Game* game){
 
 }
 
-bool game_isLegalMove(Game* game, int move, int playerId){
-    bool res;
-    if (game->board[move]<0||move%6!=playerId){  //playerId == 0 pour le p1 et ==1 pour le p2
-        res=false;
+
+
+bool game_isLegalMove(Game* game, int move, int playerId) { //playerId à 0 si p1 et 1 si p2
+    bool res = true; // Initialisez res à true par défaut
+
+    // Vérifiez si la case spécifiée par le mouvement est valide
+    if (game->board[move] <= 0 || move % 6 != playerId) {
+        res = false;
+    } else {
+        // Vérifiez si la ligne est vide
+        bool lineEmpty = true;
+        for (int i = 0; i < 6; i++) {
+            if (game->board[i + ((playerId + 1) % 2) * 6] != 0) {
+                lineEmpty = false;
+                break; // Aucune nécessité de continuer si la ligne n'est pas vide
+            }
+        }
+
+        // Vérifiez si la ligne est vide et si le mouvement est valide pour une ligne vide
+        if (lineEmpty && (move % 6) + game->board[move] >= 6) {
+            res = false;
+        }
     }
-    else{
-        res=true;
-    }
+
     return res;
-}   
+}
+
+
+
+int game_isFinished(Game* game,int playerId){ //retourne 0 si la partie n'est pas finie, 1 si p1 a gagné et 2 si p2 a gagné et 3 si égalité, playerId correspond au joueur qui va jouer
+    bool lineEmpty=true;
+
+    if(board->scores[(playerId+1)%2]>=25){
+        res=((playerId+1)%2)+1;
+    }else{
+        for(int i=0;i<6;i++){
+            if (game->board[i+playerId*6]!=0){
+                lineEmpty=false;
+            }
+        }
+
+        int res=0;
+
+        if(lineEmpty){
+            bool famine=true
+            for(int i=0;i<6;i++){
+                if(game->board[i+((playerId+1)%2)*6]+i>=6){
+                    famine=false
+                }
+            }
+            if(famine){
+                int total=0;
+                for(int i=0;i<6;i++){
+                    total+=games->board[i+playerId*6];
+                }
+                board->scores[playerId]+=total;
+
+                if(board->scores[0]>board->scores[1]){
+                    res=1;
+                }else if (board->scores[0]<board->scores[1]){
+                    res=2;
+
+                }else{
+                    res=3;
+                }
+            }
+        }
+    }
+
+    return res;
+}
+
+    
+
+
