@@ -2,18 +2,15 @@
 #define HISTORY_H
 
 #include <List.h>
-
-// Définition de la structure représentant la "classe"
+#include <game.h>
 typedef struct {
-    // Déclaration des membres de la classe
-    List moves;
-    Game game;
-    int state;
+    List * moves;
+    Game * game;
+    int state; // 0 en cours, 1 terminé
 } History;
 
-// Déclaration des fonctions associées à la "classe"
-History* creer(int valeur1, const char* valeur2);
-void detruire(History* objet);
-void afficher(History* objet);
+History* history_create(Game * game);
+void history_destroy(History* objet);
+void history_print(History* objet);
 
 #endif  // HISTORY_H
