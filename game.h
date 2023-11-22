@@ -16,4 +16,4 @@ void afficher(Game* objet);
 
 #endif  // GAME_H
 
-//test agathe
+//test agathe, va te faire foutre victor
