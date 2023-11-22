@@ -15,3 +15,5 @@ void detruire(Game* objet);
 void afficher(Game* objet);
 
 #endif  // GAME_H
+
+//test agathe
