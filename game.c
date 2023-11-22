@@ -34,3 +34,10 @@ void game_print(Game* objet) {
     player_print(objet->p2);
     printf("Score : %i\n",objet->scores[1]);
 }
+
+void game_playMove(Game* game, int move) {
+    nb_seed=game->board[move];
+    for (int i=nb_seed;i>0;i--){
+        game->board[(move+i)%12]+=1;
+    }
+}
