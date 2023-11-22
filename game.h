@@ -10,9 +10,9 @@ typedef struct {
     int scores[2];
 } Game;
 
-Game* creer(int valeur1, const char* valeur2);
-void detruire(Game* objet);
-void afficher(Game* objet);
+Game* create(int valeur1, const char* valeur2);
+void destroy(Game* objet);
+void print(Game* objet);
 
 #endif  // GAME_H
 
