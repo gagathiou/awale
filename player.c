@@ -21,6 +21,8 @@ Player* creer(char* name, char* pw){
     p->bio="";
     p->state=0;
     p->friends=List.createList();
+
+    return p;
     
 }
 void Player_detruire(Player* objet){
