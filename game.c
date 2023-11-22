@@ -1,19 +1,30 @@
-#ifndef GAME_H
-#define GAME_H
+#include "game.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Définition de la structure représentant la "classe"
-typedef struct {
-    // Déclaration des membres de la classe
-    int board [12];
-    Player p1;
-    Player p2;
-    int scores[2];
-    
-} Game;
+// Fonction pour créer une instance de la "classe"
+Game* game_create(char* name, char* pw){
+    Game* objet = (Game*)malloc(sizeof(Game));
 
-// Déclaration des fonctions associées à la "classe"
-Game* creer(int valeur1, const char* valeur2);
-void detruire(Game* objet);
-void afficher(Game* objet);
+    if (objet != NULL) {
+        objet->pseudo = name;
+        objet->password=pw;
+        objet->state=0;
+        objet->bio="";
+        objet->friends=createList();
 
-#endif  // GAME_H
+    }
+
+    return objet;
+}
+
+// Fonction pour détruire une instance de la "classe"
+void player_destroy(Player* objet) {
+    free(objet);
+}
+
+// Fonction pour afficher les membres de la "classe"
+void player_print(Player* objet) {
+    printf("Psuedo : %s\nPw : %s\nBio : %s\nState : %i\n",objet->pseudo,objet->password,objet->bio,objet->state);
+}
