@@ -115,35 +115,36 @@ bool game_isLegalMove(Game* game, int move, int playerId) { //playerId à 0 si p
 
 int game_isFinished(Game* game,int playerId){ //retourne 0 si la partie n'est pas finie, 1 si p1 a gagné et 2 si p2 a gagné et 3 si égalité, playerId correspond au joueur qui va jouer
     bool lineEmpty=true;
+    int res=0;
 
-    if(board->scores[(playerId+1)%2]>=25){
+    if(game->scores[(playerId+1)%2]>=25){
         res=((playerId+1)%2)+1;
     }else{
         for(int i=0;i<6;i++){
-            if (game->board[i+playerId*6]!=0){
+            if (game->board[i+((playerId+1)%2)*6]!=0){
                 lineEmpty=false;
             }
         }
 
-        int res=0;
+        
 
         if(lineEmpty){
-            bool famine=true
+            bool famine=true;
             for(int i=0;i<6;i++){
-                if(game->board[i+((playerId+1)%2)*6]+i>=6){
-                    famine=false
+                if(game->board[i+playerId*6]+i>=6){
+                    famine=false;
                 }
             }
             if(famine){
                 int total=0;
                 for(int i=0;i<6;i++){
-                    total+=games->board[i+playerId*6];
+                    total+=game->board[i+playerId*6];
                 }
-                board->scores[playerId]+=total;
+                game->scores[playerId]+=total;
 
-                if(board->scores[0]>board->scores[1]){
+                if(game->scores[0]>game->scores[1]){
                     res=1;
-                }else if (board->scores[0]<board->scores[1]){
+                }else if (game->scores[0]<game->scores[1]){
                     res=2;
 
                 }else{
