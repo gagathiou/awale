@@ -17,6 +17,7 @@ void game_destroy(Game* objet);
 void game_print(Game* objet);
 void game_playMove(Game* game, int move, int playerId);
 bool game_isLegalMove(Game* game, int move, int playerId);
+void game_printBoard(Game* game); 
 
 
 #endif  // GAME_H

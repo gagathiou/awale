@@ -51,6 +51,29 @@ void game_playMove(Game* game, int move, int playerId) {
     }
 }
 
+void game_printBoard(Game* game){
+    char* boardDisplay=(char*)malloc(sizeof(char)*60);
+    for(int j=1;j>=0;j--){
+
+    
+        for(int i=0;i<6;i++){
+            strcat(boardDisplay," -");
+        }
+        strcat(boardDisplay," \n");
+        for(int i=0;i<6;i++){
+            strcat(boardDisplay,"|"+game->board[i+6*j]);
+        }
+        strcat(boardDisplay,"|\n");
+    }
+    for(int i=0;i<6;i++){
+            strcat(boardDisplay," -");
+        }
+        strcat(boardDisplay," \n");
+    printf("%s",boardDisplay);
+    free(boardDisplay);
+
+}
+
 bool game_isLegalMove(Game* game, int move, int playerId){
     bool res;
     if (game->board[move]<0||move%6!=playerId){  //playerId == 0 pour le p1 et ==1 pour le p2
