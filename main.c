@@ -52,7 +52,6 @@ int main(){
             }
         }
         fclose(file);
-
     }else if (i==2){
         printf("Please give us a pseudo to create your account.\n");
     }else{
@@ -73,14 +72,14 @@ int main(){
             printf("Here are your profile :\n");
         }else if(i==4){
             printf("Which player do you want to challenge ? :\n");
-            Player* p=player_create("Torvik","AgatheNul");
-            player_print(p);
-            Player* p2=player_create("Gagathe","VictorSuper");
-            player_print(p2);
-            Game* g=game_create(p,p2);
-            game_print(g);
-            player_destroy(p);
-        }else if (i==5){
+            // Player* p=player_create("Torvik","AgatheNul");
+            // player_print(p);
+            // Player* p2=player_create("Gagathe","VictorSuper");
+            // player_print(p2);
+            // Game* g=game_create(p,p2);
+            // game_print(g);
+            // player_destroy(p);
+        }else if(i==5){
             printf("You chose to disconnect, goodbye and see you soon on Awale.\n");
             menu = 4;
         }else{
