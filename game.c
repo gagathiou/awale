@@ -12,8 +12,8 @@ typedef struct {
 } Game;
 
 // Déclaration des fonctions associées à la "classe"
-MaClasse* MaClasse_creer(int valeur1, const char* valeur2);
-void MaClasse_detruire(MaClasse* objet);
-void MaClasse_afficher(MaClasse* objet);
+Game* creer(int valeur1, const char* valeur2);
+void detruire(Game* objet);
+void afficher(Game* objet);
 
 #endif  // GAME_H
