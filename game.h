@@ -5,14 +5,14 @@
 
 typedef struct {
     int board [12];
-    Player p1;
-    Player p2;
+    Player* p1;
+    Player* p2;
     int scores[2];
 } Game;
 
-Game* creer(int valeur1, const char* valeur2);
-void detruire(Game* objet);
-void afficher(Game* objet);
+Game* game_create(Player* player1,Player* player2);
+void game_destroy(Game* objet);
+void game_print(Game* objet);
 
 #endif  // GAME_H
 
