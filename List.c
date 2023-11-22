@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-List* createList() {
+List* list_create() {
     List* list = (List*)malloc(sizeof(List));
     if (list != NULL) {
         list->head = NULL;
@@ -10,7 +10,7 @@ List* createList() {
     return list;
 }
 
-void destroyList(List* list) {
+void list_destroy(List* list) {
     Node* current = list->head;
     while (current != NULL) {
         Node* next = current->next;
@@ -20,7 +20,7 @@ void destroyList(List* list) {
     free(list);
 }
 
-void insertFront(List* list, int data) {
+void list_insertFront(List* list, int data) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     if (newNode != NULL) {
         newNode->data = data;
@@ -29,7 +29,7 @@ void insertFront(List* list, int data) {
     }
 }
 
-void printList(List* list) {
+void list_print(List* list) {
     Node* current = list->head;
     while (current != NULL) {
         printf("%d ", current->data);

@@ -36,8 +36,8 @@ void game_print(Game* objet) {
 }
 
 void game_playMove(Game* game, int move) {
-    nb_seed=game->board[move];
-    for (int i=nb_seed;i>0;i--){
-        game->board[(move+i)%12]+=1;
-    }
+    // nb_seed=game->board[move];
+    // for (int i=nb_seed;i>0;i--){
+    //     game->board[(move+i)%12]+=1;
+    // }
 }
