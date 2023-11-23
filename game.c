@@ -51,13 +51,28 @@ void game_print(Game* objet) {
 //le player 1 joue toujours sur 0 1 2 3 4 5
 void game_playMove(Game* game, int move, int playerId) {
     int nb_seed=game->board[move];
-    bool get_seed=true;
-    for (int i=nb_seed;i>0;i--){
-        game->board[(move+i)%12]+=1;       
+    int other_player=(playerId+1)%2;
+    int totalScore=0;
+    bool get_seed=false;
+    for(int i=0;i<6;i++){
+        int max_hole=(nb_seed+move)%12;
 
-        if(get_seed==true&&(game->board[(move+i)%12]==2||game->board[(move+i)%12]==3)&&(((int)floor((move+i)/6))!=playerId)){
-            game->scores[(int)floor(move/6)]+=game->board[(move+i)%12];
-            game->board[(move+i)%12]=0;
+        if((i+(6*other_player)<=max_hole)&&!(game->board[i]==1||game->board[i]==2)){
+            get_seed=true;
+        }else if((i+(6*other_player)>max_hole)&&!(game->board[i]==0)){
+            get_seed=true;
+        }
+    }
+    for (int i=nb_seed;i>0;i--){
+
+        int hole=(move+i)%12;
+        int line=(int)floor(hole/6);
+        game->board[hole]+=1;       
+
+        if(get_seed==true&&(game->board[hole]==2||game->board[hole]==3)&&(line!=playerId)){
+            game->scores[playerId]+=game->board[hole];
+            totalScore+=game->board[hole];
+            game->board[hole]=0;
         }else{
             get_seed=false;
         }
@@ -108,22 +123,24 @@ void game_printBoard(Game* game){
 
 bool game_isLegalMove(Game* game, int move, int playerId) { //playerId à 0 si p1 et 1 si p2
     bool res = true; // Initialisez res à true par défaut
+    int linePlayed=(int)floor(move/6);
+    int otherPlayer=(playerId+1)%2;
 
     // Vérifiez si la case spécifiée par le mouvement est valide
-    if (game->board[move] <= 0 || (int)floor(move/6) != playerId) {
+    if (game->board[move] <= 0 || linePlayed != playerId) {
         res = false;
     } else {
         // Vérifiez si la ligne est vide
         bool lineEmpty = true;
-        for (int i = 0; i < 6; i++) {
-            if (game->board[i + ((playerId + 1) % 2) * 6] != 0) {
+        for (int i=0;i<6;i++) {
+            if (game->board[i+otherPlayer*6]!=0) {
                 lineEmpty = false;
                 break; // Aucune nécessité de continuer si la ligne n'est pas vide
             }
         }
 
         // Vérifiez si la ligne est vide et si le mouvement est valide pour une ligne vide
-        if (lineEmpty && (move % 6) + game->board[move] >= 6) {
+        if (lineEmpty && (move % 6) + game->board[move] < 6) {
             res = false;
         }
     }
