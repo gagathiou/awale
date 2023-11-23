@@ -51,13 +51,38 @@ int main(){
                 menu = 3;
             }
         }
-        fclose(file);
     }else if (i==2){
+        menu = 2;
         printf("Please give us a pseudo to create your account.\n");
+        scanf("%s", pseudo);
+
+        // Vérifier si le pseudo existe déjà
+        rewind(file);
+        int usernameExists = 0;
+        while (fscanf(file, "%s", pseudo) == 2) {
+            if (strcmp(cred.username, pseudo) == 0) {
+                usernameExists = 1;
+                break;
+            }
+        }
+
+        // if (usernameExists==0) {
+        //     printf("This username already exists. Please choose another one.\n");
+        // } else {
+            printf("Username available! Please enter your password: ");
+            scanf("%s", password);
+
+            // Enregistrer les informations dans le fichier
+            fprintf(file, "%s %s\n", pseudo, password);
+
+            printf("Registration successful!\n");
+            menu = 3;  // Vous pouvez mettre la valeur que vous souhaitez ici pour sortir de la boucle
+        // }
     }else{
         printf("You chose an out of range option. \n");
     }
 
+    fclose(file);
 
 
     while(menu==3){
