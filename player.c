@@ -11,8 +11,7 @@ Player* player_create(char* name, char* pw){
         objet->password=pw;
         objet->state=0;
         objet->bio="";
-        objet->friends=list_create();
-
+        //objet->friends=list_p_create();
     }
 
     return objet;
@@ -23,5 +22,5 @@ void player_destroy(Player* objet) {
 }
 
 void player_print(Player* objet) {
-    printf("Psuedo : %s\nPw : %s\nBio : %s\nState : %i\n",objet->pseudo,objet->password,objet->bio,objet->state);
+    printf("Pseudo : %s\nPw : %s\nBio : %s\nState : %i\n",objet->pseudo,objet->password,objet->bio,objet->state);
 }

@@ -3,87 +3,100 @@
 #include "player.h"
 #include "game.h"
 
+
 #define MAX_LENGTH 100
 
+typedef struct {
+    char username[MAX_LENGTH];
+    char password[MAX_LENGTH];
+} Credential;
 
-int main(){
+int isUsernameTaken(const char *username, FILE *file) {
+    Credential user;
+    rewind(file);
+    while (fscanf(file, "%s", user.username) == 1) {
+        if (strcmp(user.username, username) == 0) { return 1; }  // Pseudo already taken
+    }
+    return 0;  // Pseudo available
+}
 
-    typedef struct {
-        char username[MAX_LENGTH];
-        char password[MAX_LENGTH];
-    } Credential;
+int connection_inscription(int menu){
 
     int i;
-    int menu = 0;
     int authSuccess = 0;
-    Credential cred;
-    char * pseudo =malloc(64*sizeof(char));
-    char * password = malloc(64*sizeof(char));
-    FILE *file = fopen("credentials.txt", "r");
-    if (file == NULL) {
-        perror("Error in the file's opening.");
-        return 0; 
-    }
+    Credential cred, user;
+    char *pseudo = malloc(64 * sizeof(char));
+    char *password = malloc(64 * sizeof(char));
 
+    FILE *file = fopen("credentials.txt", "r+");  
+    if (file == NULL) {
+        perror("Error opening the file.");
+        return 0;
+    }
 
     printf("Hi, welcome to Awale.\nPlease login [1] or create an account [2].\n");
     scanf("%d", &i);
-    if(i==1){
-        menu =1;
-        while(menu==1){
+
+    if (i == 1) {
+        menu = 1;
+        while (menu == 1) {
             printf("Please enter your pseudo : ");
             scanf("%s", pseudo);
             printf("Welcome %s ! ", pseudo);
             printf("Please enter your password : ");
             scanf("%s", password);
-            
+
             rewind(file);
             while (fscanf(file, "%s %s", cred.username, cred.password) == 2) {
                 if (strcmp(pseudo, cred.username) == 0 && strcmp(password, cred.password) == 0) {
-                    authSuccess = 1;  // Authentification réussie
+                    authSuccess = 1;
                     break;
                 }
             }
-            if(authSuccess==0){
+            
+            if (authSuccess == 0) {
                 printf("Your identification did not work.\n");
-            }else{
+            } else {
                 printf("Your identification worked !\n\n");
                 menu = 3;
             }
         }
-    }else if (i==2){
-        menu = 2;
-        printf("Please give us a pseudo to create your account.\n");
-        scanf("%s", pseudo);
+    } else if (i == 2) {
+        do {
+            printf("Enter your pseudo : ");
+            scanf("%s", user.username);
 
-        // Vérifier si le pseudo existe déjà
-        rewind(file);
-        int usernameExists = 0;
-        while (fscanf(file, "%s", pseudo) == 2) {
-            if (strcmp(cred.username, pseudo) == 0) {
-                usernameExists = 1;
-                break;
-            }
+            if (isUsernameTaken(user.username, file) != 0) {
+                printf("This pseudo is already taken. Please choose another.\n");
+            }else{ menu = 2;}
+        } while (menu !=2);
+
+        printf("Enter your password : ");
+        scanf("%s", user.password);
+
+        fseek(file, 0, SEEK_END);  
+        if (fprintf(file, "\n%s %s", user.username, user.password) < 0) {
+            perror("Error writing to the file.");
+            exit(EXIT_FAILURE);
         }
 
-        // if (usernameExists==0) {
-        //     printf("This username already exists. Please choose another one.\n");
-        // } else {
-            printf("Username available! Please enter your password: ");
-            scanf("%s", password);
-
-            // Enregistrer les informations dans le fichier
-            fprintf(file, "%s %s\n", pseudo, password);
-
-            printf("Registration successful!\n");
-            menu = 3;  // Vous pouvez mettre la valeur que vous souhaitez ici pour sortir de la boucle
-        // }
-    }else{
-        printf("You chose an out of range option. \n");
+        printf("Your inscription worked !\n");
+        menu = 3;
+    } else {
+        printf("You chose an out-of-range option.\n");
     }
 
     fclose(file);
+    free(pseudo);
+    free(password);
 
+    return menu;
+}
+
+int main() {
+
+    int i;
+    int menu = connection_inscription(0);
 
     while(menu==3){
         printf("\nWelcome to your Awale menu. What do you want to do? \n[1]Consult the ongoing games [2]Consult the online pseudo \n[3]Check your profile        [4]Challenge another player \n[5]Disconnect");
