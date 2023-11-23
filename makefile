@@ -5,7 +5,7 @@ TARGET = awale
 CC = gcc
 
 # Options de compilation
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -Wextra -g -lm
 
 # Fichiers source
 SRCS = List.c player.c main.c history.c game.c 
