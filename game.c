@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 
 // Fonction pour créer une instance de la "classe"
@@ -54,31 +55,46 @@ void game_playMove(Game* game, int move, int playerId) {
     for (int i=nb_seed;i>0;i--){
         game->board[(move+i)%12]+=1;       
 
-        if(get_seed==true&&(game->board[(move+i)%12]==2||game->board[(move+i)%12]==3)&&(((move+i)%6)!=playerId)){
-            game->scores[move%6]+=game->board[(move+i)%12];
+        if(get_seed==true&&(game->board[(move+i)%12]==2||game->board[(move+i)%12]==3)&&(((int)floor((move+i)/6))!=playerId)){
+            game->scores[(int)floor(move/6)]+=game->board[(move+i)%12];
             game->board[(move+i)%12]=0;
+        }else{
+            get_seed=false;
         }
     }
     game->board[move]=0;
 }
 
 void game_printBoard(Game* game){
-    char* boardDisplay=(char*)malloc(sizeof(char)*70);
-    for(int j=1;j>=0;j--){
+    char* boardDisplay=(char*)malloc(sizeof(char)*67);
+    memset(boardDisplay, 0, sizeof(char) * 67);
 
-    
-        for(int i=0;i<6;i++){
-            strcat(boardDisplay," -");
-        }
-        strcat(boardDisplay," \n");
-        for(int i=0;i<6;i++){
-            strcat(boardDisplay,"|");
-            char* nb_seed=(char*)malloc(sizeof(char)*5);
-            sprintf(nb_seed,"%d",game->board[i+6*j]);
-            strcat(boardDisplay,nb_seed);
-        }
-        strcat(boardDisplay,"|\n");
+    printf("Score J1 : %d Score J2 : %d\n",game->scores[0],game->scores[1]);
+   
+    for(int i=0;i<6;i++){
+        strcat(boardDisplay," -");
     }
+    strcat(boardDisplay," \n");
+    for(int i=5;i>=0;i--){
+        strcat(boardDisplay,"|");
+        char* nb_seed=(char*)malloc(sizeof(char)*5);
+        sprintf(nb_seed,"%d",game->board[i+6]);
+        strcat(boardDisplay,nb_seed);
+    }
+    strcat(boardDisplay,"|\n");
+    
+    for(int i=0;i<6;i++){
+        strcat(boardDisplay," -");
+    }
+    strcat(boardDisplay," \n");
+    for(int i=0;i<6;i++){
+        strcat(boardDisplay,"|");
+        char* nb_seed=(char*)malloc(sizeof(char)*5);
+        sprintf(nb_seed,"%d",game->board[i]);
+        strcat(boardDisplay,nb_seed);
+    }
+    strcat(boardDisplay,"|\n");
+    
     for(int i=0;i<6;i++){
             strcat(boardDisplay," -");
         }
@@ -94,7 +110,7 @@ bool game_isLegalMove(Game* game, int move, int playerId) { //playerId à 0 si p
     bool res = true; // Initialisez res à true par défaut
 
     // Vérifiez si la case spécifiée par le mouvement est valide
-    if (game->board[move] <= 0 || move % 6 != playerId) {
+    if (game->board[move] <= 0 || (int)floor(move/6) != playerId) {
         res = false;
     } else {
         // Vérifiez si la ligne est vide
@@ -129,9 +145,6 @@ int game_isFinished(Game* game,int playerId){ //retourne 0 si la partie n'est pa
                 lineEmpty=false;
             }
         }
-
-        
-
         if(lineEmpty){
             bool famine=true;
             for(int i=0;i<6;i++){

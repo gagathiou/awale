@@ -116,9 +116,8 @@ int main(){
                 printf("quel coup jouer\n");
                 int coup;
                 scanf("%d",&coup);
-                while(game_isLegalMove(g,coup,joueur)){
+                while(!game_isLegalMove(g,coup,joueur)){
                     printf("mauvais coup, quel coup jouer\n");
-                    int coup;
                     scanf("%d",&coup);
                 }
                 game_playMove(g,coup,joueur);
