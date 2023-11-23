@@ -8,7 +8,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g -lm
 
 # Fichiers source
-SRCS = List.c player.c main.c history.c game.c List_P.c
+SRCS = List.c player.c main.c history.c game.c List_P.c friends.c
 OBJS = $(SRCS:.c=.o)
 
 # Inclusion du fichier en-tête
