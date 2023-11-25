@@ -80,11 +80,11 @@ void game_playMove(Game* game, int move, int playerId) {
     game->board[move]=0;
 }
 
-void game_printBoard(Game* game){
+char* game_printBoard(Game* game){
     char* boardDisplay=(char*)malloc(sizeof(char)*67);
     memset(boardDisplay, 0, sizeof(char) * 67);
 
-    printf("Score J1 : %d Score J2 : %d\n",game->scores[0],game->scores[1]);
+    //printf("Score J1 : %d Score J2 : %d\n",game->scores[0],game->scores[1]);
    
     for(int i=0;i<6;i++){
         strcat(boardDisplay," -");
@@ -114,8 +114,8 @@ void game_printBoard(Game* game){
             strcat(boardDisplay," -");
         }
         strcat(boardDisplay," \n");
-    printf("%s",boardDisplay);
-    free(boardDisplay);
+    return boardDisplay;
+    
 
 }
 

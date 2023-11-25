@@ -33,6 +33,9 @@ static void app(void)
    /* the index for the array */
    int actual = 0;
    int max = sock;
+
+   int actual_game=0;
+   Game games[MAX_CLIENTS];
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
 
@@ -94,6 +97,8 @@ static void app(void)
          Client c = { csock };
          strncpy(c.name, buffer, BUF_SIZE - 1);
          clients[actual] = c;
+         show_menu(&(clients[actual]));
+         clients[actual].state=0;
          actual++;
       }
       else
@@ -104,20 +109,73 @@ static void app(void)
             /* a client is talking */
             if(FD_ISSET(clients[i].sock, &rdfs))
             {
-               Client client = clients[i];
+               Client* client = &clients[i];
                int c = read_client(clients[i].sock, buffer);
                /* client disconnected */
                if(c == 0)
                {
                   closesocket(clients[i].sock);
                   remove_client(clients, i, &actual);
-                  strncpy(buffer, client.name, BUF_SIZE - 1);
+                  strncpy(buffer, client->name, BUF_SIZE - 1);
                   strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
-                  send_message_to_all_clients(clients, client, actual, buffer, 1);
+                  send_message_to_all_clients(clients, *client, actual, buffer, 1);
                }
                else
                {
-                  send_message_to_all_clients(clients, client, actual, buffer, 0);
+                  switch(client->state){
+
+                     case 0 : //menu de sélection
+
+                        if(strcmp("1",buffer)==0){
+                           client->state=1;
+                           write_client(client->sock,"Ecrivez le pseudo que vous voulez défier");
+                        }
+                        
+
+                        break;
+                     
+                     case 1 : //choisit qui défier
+
+                        defy(clients,client,buffer,actual);
+
+                        break;
+                     
+                     case 2 : //en attente de la réponse de l'adversaire
+
+                        
+
+                        break;
+
+                     case 3 : //répond à une demande de défi
+
+                        if(strcmp("1",buffer)){
+                              
+                              games[actual_game]=init_game(client,client->opponent,actual_game);
+                              actual_game++;
+
+                        }else if(strcmp("2",buffer)){
+
+                              reject(client,client->opponent);
+
+                        }
+
+                        break;
+
+                     case 4 : //en partie
+                        Game* g = games[client->index_actual_game];
+                        if(client==g->c1&&g->turn==1||client==g->c2&&g->turn==2){
+                           play(client,buffer,games);
+                        }
+                        
+
+                        break;
+
+
+                     default :
+
+                        break;
+
+                  }
                }
                break;
             }
@@ -127,6 +185,76 @@ static void app(void)
 
    clear_clients(clients, actual);
    end_connection(sock);
+}
+
+static void play(Client * c,char* buffer,Game[] games){
+   Game* g=games[c->index_actual_game];
+   int move=atoi(buffer);
+   if(game_isLegalMove(g,move)){
+      game_playMove(g,move);
+      int res=game_isFinished(g);
+      if(res==0){
+         if(g->turn==0){
+            
+         }
+      }
+   }
+}
+
+static void reject(Client* c1, Client* c2){
+   write_client(c2->sock,"L'adversaire a refusé le défi, retour au menu\n");
+   c1->state=0;
+   c2->state=0;
+   show_menu(c1);
+   show_menu(c2);
+}
+
+Game* init_game(Client* c1, Client* c2,int actual_game){
+   c1->state=4;
+   c2->state=4;
+   c1->index_actual_game=actual_game;
+   c2->index_actual_game=actual_game;
+
+
+   Game* g=game_create(c1->Player,c2->Player);
+
+   write_client(g->c1->sock,game_printBoard(g));
+   write_client(g->c2->sock,"En attente du coup de l'autre joueur\n");
+
+   return g;
+
+}
+
+static void show_menu(Client* client){
+
+   write_client(client->sock,"Veuillez choisir ce que vous voulez faire : \n");
+   write_client(client->sock,"1. Défier quelqu'un\n");
+}
+
+static void defy(Client* clients,Client* c, const char* buffer, int actual){
+
+   for (int i=0;i<actual;i++){
+      if(strcmp(clients[i].name,buffer)==0){
+         if(clients[i].state!=0){
+            write_client(c->sock,"Le joueur est occcupé, retour au menu\n");
+            c->state=0;
+            show_menu(c);
+            break;
+         }else{
+            c->state=2;
+            write_client(clients[i].sock,strcat(c->name," vous a défié, 1 pour accepter et 2 pour refuser\n"));
+            clients[i].state=3;
+            clients[i].opponent=c;
+            c->opponent=clients[i];
+            break;
+         }
+      }
+   }
+   if(c->state==1){
+      write_client(c->sock,"Le client n'existe pas ou n'est pas connecté, retour au menu\n");
+      c->state=0;
+      show_menu(c);      
+   }
 }
 
 static void clear_clients(Client *clients, int actual)
