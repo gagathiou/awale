@@ -3,8 +3,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "server.h"
-#include "client.h"
+#include "server2.h"
 
 
 static void init(void)
@@ -33,12 +32,11 @@ static void app(void)
    char buffer[BUF_SIZE];
    /* the index for the array */
    int actual = 0;
+   int actual_match=0;
    int max = sock;
-
-   int actual_game=0;
-   Game games[MAX_CLIENTS];
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
+   Match matchs[MAX_CLIENTS];
 
    fd_set rdfs;
 
@@ -98,8 +96,8 @@ static void app(void)
          Client c = { csock };
          strncpy(c.name, buffer, BUF_SIZE - 1);
          clients[actual] = c;
-         show_menu(&(clients[actual]));
          clients[actual].state=0;
+         show_menu(&(clients[actual]));
          actual++;
       }
       else
@@ -110,7 +108,7 @@ static void app(void)
             /* a client is talking */
             if(FD_ISSET(clients[i].sock, &rdfs))
             {
-               Client* client = &clients[i];
+               Client* client = &(clients[i]);
                int c = read_client(clients[i].sock, buffer);
                /* client disconnected */
                if(c == 0)
@@ -151,8 +149,8 @@ static void app(void)
 
                         if(strcmp("1",buffer)){
                               
-                              games[actual_game]=init_game(client,client->opponent,actual_game);
-                              actual_game++;
+                              matchs[actual_match]=init_match(client,client->opponent,actual_match);
+                              actual_match++;
 
                         }else if(strcmp("2",buffer)){
 
@@ -163,9 +161,9 @@ static void app(void)
                         break;
 
                      case 4 : //en partie
-                        Game* g = &(games[client->index_actual_game]);
-                        if(client==g->c1&&g->turn==0||client==g->c2&&g->turn==1){
-                           play(client,buffer,games);
+                        Match* m = &(matchs[client->index_actual_game]);
+                        if((client==m->c1&&m->g->turn==0)||(client==m->c2&&m->g->turn==1)){
+                           play(client,buffer,matchs);
                         }
                         
 
@@ -188,51 +186,13 @@ static void app(void)
    end_connection(sock);
 }
 
-static void play(Client * c,char* buffer,Game* games){
-   Game* g=&(games[c->index_actual_game]);
-   int move=atoi(buffer);
-   if(game_isLegalMove(g,move)){
-      game_playMove(g,move);
-      int res=game_isFinished(g);
-      if(res==0){
-         if(g->turn==0){
-            g->turn=1;
-            write_client(g->c1->sock,"En attente du coup de l'autre joueur\n");
-            write_client(g->c2->sock,game_printBoard(g));
-         }else{
-            g->turn=0;
-            write_client(g->c2->sock,"En attente du coup de l'autre joueur\n");
-            write_client(g->c1->sock,game_printBoard(g));
-         }
-      }else if(res==1||res==2){
-         write_client(g->c1->sock,strcat(strcat("Le gagnant est le joueur ",res),"\n"));
-         g->c1->state=5;
-         g->c2->state=5;
-      }
-      else{
-         write_client(g->c1->sock,"Egalité\n");
-         g->c1->state=5;
-         g->c2->state=5;
-      }
-   }else{
-      if(g->turn==0){
-         write_client(g->c1->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
-      }else{
-         write_client(g->c2->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
-      }
-      
-   }
+void show_menu(Client* client){
+
+   write_client(client->sock,"Veuillez choisir ce que vous voulez faire : \n");
+   write_client(client->sock,"1. Défier quelqu'un\n");
 }
 
-static void reject(Client* c1, Client* c2){
-   write_client(c2->sock,"L'adversaire a refusé le défi, retour au menu\n");
-   c1->state=0;
-   c2->state=0;
-   show_menu(c1);
-   show_menu(c2);
-}
-
-Game init_game(Client* c1, Client* c2,int actual_game){
+Match init_match(Client* c1, Client* c2,int actual_game){
 
    c1->state=4;
    c2->state=4;
@@ -240,22 +200,64 @@ Game init_game(Client* c1, Client* c2,int actual_game){
    c2->index_actual_game=actual_game;
 
 
-   Game* g=game_create(c1,c2);
+   Game* g=game_create();
 
-   write_client(g->c1->sock,game_printBoard(g));
-   write_client(g->c2->sock,"En attente du coup de l'autre joueur\n");
+   Match* m=match_create(c1,c2,g);
 
-   return *g;
+   write_client(m->c1->sock,game_printBoard(g));
+   write_client(m->c2->sock,"En attente du coup de l'autre joueur\n");
+
+   return *m;
 
 }
 
-static void show_menu(Client* client){
-
-   write_client(client->sock,"Veuillez choisir ce que vous voulez faire : \n");
-   write_client(client->sock,"1. Défier quelqu'un\n");
+void play(Client * c,char* buffer,Match* matchs){
+   Match* m=&(matchs[c->index_actual_game]);
+   int move=atoi(buffer);
+   if(game_isLegalMove(m->g,move)){
+      game_playMove(m->g,move);
+      int res=game_isFinished(m->g);
+      if(res==0){
+         if(m->g->turn==0){
+            m->g->turn=1;
+            write_client(m->c1->sock,"En attente du coup de l'autre joueur\n");
+            write_client(m->c2->sock,game_printBoard(m->g));
+         }else{
+            m->g->turn=0;
+            write_client(m->c2->sock,"En attente du coup de l'autre joueur\n");
+            write_client(m->c1->sock,game_printBoard(m->g));
+         }
+      }else if(res==1||res==2){
+         char winner[2];
+         sprintf(winner, "%d", res);
+         write_client(m->c1->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+         m->c1->state=5;
+         m->c2->state=5;
+      }
+      else{
+         write_client(m->c1->sock,"Egalité\n");
+         m->c1->state=5;
+         m->c2->state=5;
+      }
+   }else{
+      if(m->g->turn==0){
+         write_client(m->c1->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
+      }else{
+         write_client(m->c2->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
+      }
+      
+   }
 }
 
-static void defy(Client* clients,Client* c, const char* buffer, int actual){
+void reject(Client* c1, Client* c2){
+   write_client(c2->sock,"L'adversaire a refusé le défi, retour au menu\n");
+   c1->state=0;
+   c2->state=0;
+   show_menu(c1);
+   show_menu(c2);
+}
+
+void defy(Client* clients,Client* c, const char* buffer, int actual){
 
    for (int i=0;i<actual;i++){
       if(strcmp(clients[i].name,buffer)==0){
@@ -379,7 +381,36 @@ static void write_client(SOCKET sock, const char *buffer)
    }
 }
 
-int main(int argc, char **argv)
+Match* match_create(Client* client1,Client* client2,Game* game){
+    Match* objet = (Match*)malloc(sizeof(Match));
+
+    //assignation aléatoire, c1 est le premier à jouer
+
+    if(objet!=NULL){
+
+        srand(time(NULL));
+        if(rand()%2==0){
+            objet->c1=client1;
+            objet->c2=client2;
+        }else{
+            objet->c2=client1;
+            objet->c1=client2;
+        }
+
+        objet->g=game;
+
+
+    }
+    
+    return objet;
+}
+
+// Fonction pour détruire une instance de la "classe"
+void match_destroy(Match* objet) {
+    free(objet);
+}
+
+int main()
 {
    init();
 

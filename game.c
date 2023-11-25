@@ -2,22 +2,15 @@
 
 
 // Fonction pour créer une instance de la "classe"
-Game* game_create(Client* player1,Client* player2){
+Game* game_create(){
     Game* objet = (Game*)malloc(sizeof(Game));
 
     //génération de la seed en fonction de l'heure actuelle
-    srand(time(NULL));
+
     
 
     if (objet != NULL) {
         //tirage au sort, le p1 est toujours premier à jouer
-        if(rand()%2==0){
-            objet->c1=player1;
-            objet->c2=player2;
-        }else{
-            objet->c2=player1;
-            objet->c1=player2;
-        }
         
         for (int i=0;i<12;i++){
             objet->board[i]=4;

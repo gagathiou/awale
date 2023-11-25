@@ -1,13 +1,7 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-
-struct Client;  // Forward declaration
-
-#include "server.h"
-#include "../player.h"
-
-
+#include "server2.h"
 
 typedef struct Client
 {
@@ -16,7 +10,6 @@ typedef struct Client
    int state;
    struct Client* opponent;
    int index_actual_game;
-   Player player;
 }Client;
 
 #endif /* guard */
