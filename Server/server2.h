@@ -1,3 +1,5 @@
+
+
 #ifndef SERVER_H
 #define SERVER_H
 
@@ -34,6 +36,7 @@ typedef struct in_addr IN_ADDR;
 #define BUF_SIZE    1024
 
 #include "client2.h"
+#include "/home/vlesaint/Documents/awale/awale/game.h"
 
 static void init(void);
 static void end(void);
@@ -45,5 +48,10 @@ static void write_client(SOCKET sock, const char *buffer);
 static void send_message_to_all_clients(Client *clients, Client client, int actual, const char *buffer, char from_server);
 static void remove_client(Client *clients, int to_remove, int *actual);
 static void clear_clients(Client *clients, int actual);
+static void play(Client * c,char* buffer,Game[] games);
+static void reject(Client* c1, Client* c2);
+Game* init_game(Client* c1, Client* c2,int actual_game);
+static void show_menu(Client* client);
+static void defy(Client* clients,Client* c, const char* buffer, int actual);
 
 #endif /* guard */
