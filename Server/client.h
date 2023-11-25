@@ -1,8 +1,13 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
-#include "server2.h"
+
+struct Client;  // Forward declaration
+
+#include "server.h"
 #include "../player.h"
+
+
 
 typedef struct
 {

@@ -1,9 +1,4 @@
 #include "game.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
 
 
 // Fonction pour créer une instance de la "classe"
@@ -43,10 +38,10 @@ void game_destroy(Game* objet) {
 // Fonction pour afficher les membres de la "classe"
 void game_print(Game* objet) {
     printf("Player 1 :\n");
-    player_print(objet->c1);
+    //player_print(objet->c1);
     printf("Score : %i\n",objet->scores[0]);
     printf("Player 2 :\n");
-    player_print(objet->c2);
+    //player_print(objet->c2);
     printf("Score : %i\n",objet->scores[1]);
 }
 

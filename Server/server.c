@@ -3,8 +3,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "server2.h"
-
+#include "server.h"
+#include "client.h"
 
 
 static void init(void)
@@ -151,7 +151,7 @@ static void app(void)
 
                         if(strcmp("1",buffer)){
                               
-                              &(games[actual_game])=init_game(client,client->opponent,actual_game);
+                              games[actual_game]=init_game(client,client->opponent,actual_game);
                               actual_game++;
 
                         }else if(strcmp("2",buffer)){
@@ -163,7 +163,7 @@ static void app(void)
                         break;
 
                      case 4 : //en partie
-                        Game* g = games[client->index_actual_game];
+                        Game* g = &(games[client->index_actual_game]);
                         if(client==g->c1&&g->turn==0||client==g->c2&&g->turn==1){
                            play(client,buffer,games);
                         }
@@ -189,7 +189,7 @@ static void app(void)
 }
 
 static void play(Client * c,char* buffer,Game* games){
-   Game* g=games[c->index_actual_game];
+   Game* g=&(games[c->index_actual_game]);
    int move=atoi(buffer);
    if(game_isLegalMove(g,move)){
       game_playMove(g,move);
@@ -210,15 +210,15 @@ static void play(Client * c,char* buffer,Game* games){
          g->c2->state=5;
       }
       else{
-         write_client(g->c1->sock,strcat("Egalité\n"));
+         write_client(g->c1->sock,"Egalité\n");
          g->c1->state=5;
          g->c2->state=5;
       }
    }else{
       if(g->turn==0){
-         write_client(g->c1->sock,strcat("Vous ne pouvez pas jouer ce coup, choisissez en un autre\n"));
+         write_client(g->c1->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
       }else{
-         write_client(g->c2->sock,strcat("Vous ne pouvez pas jouer ce coup, choisissez en un autre\n"));
+         write_client(g->c2->sock,"Vous ne pouvez pas jouer ce coup, choisissez en un autre\n");
       }
       
    }
@@ -232,7 +232,7 @@ static void reject(Client* c1, Client* c2){
    show_menu(c2);
 }
 
-Game* init_game(Client* c1, Client* c2,int actual_game){
+Game init_game(Client* c1, Client* c2,int actual_game){
 
    c1->state=4;
    c2->state=4;
@@ -240,12 +240,12 @@ Game* init_game(Client* c1, Client* c2,int actual_game){
    c2->index_actual_game=actual_game;
 
 
-   Game* g=game_create(c1->player,c2->player);
+   Game* g=game_create(c1,c2);
 
    write_client(g->c1->sock,game_printBoard(g));
    write_client(g->c2->sock,"En attente du coup de l'autre joueur\n");
 
-   return g;
+   return *g;
 
 }
 
@@ -269,7 +269,7 @@ static void defy(Client* clients,Client* c, const char* buffer, int actual){
             write_client(clients[i].sock,strcat(c->name," vous a défié, 1 pour accepter et 2 pour refuser\n"));
             clients[i].state=3;
             clients[i].opponent=c;
-            c->opponent=clients[i];
+            c->opponent=&(clients[i]);
             break;
          }
       }
