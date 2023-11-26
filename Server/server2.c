@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "server2.h"
-#include "server2.h"
 #include "client2.h"
 #include "player.h"
 #include "game.h"
@@ -211,7 +210,7 @@ static void app(void)
          char *password = malloc(64 * sizeof(char));
          int menu = connection_inscription(0, buffer, password,csock);
          afficherBio("agathe",buffer,csock);
-         
+
          /* what is the new maximum fd ? */
          max = csock > max ? csock : max;
 
