@@ -121,9 +121,9 @@ static void app(void)
                }
                else
                {
-                  char* etat[10];
-                  sprintf(etat, "%d", client->state);
-                  write_client(client->sock,etat);
+                  //char* etat[10];
+                  //sprintf(etat, "%d", client->state);
+                  //write_client(client->sock,etat);
                   switch(client->state){
 
                      case 0 : //menu de sélection
@@ -166,16 +166,28 @@ static void app(void)
                      case 4 : //en partie
                         Match* m = &(matchs[client->index_actual_game]);
                         int connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
-                           if(connection!=2){
+                        if(connection!=2){
+                              printf("dedans\n");
                               surrender(client);
-                           }
-                        if((client==m->c1&&m->g->turn==0)||(client==m->c2&&m->g->turn==1)){
+                        }
+
+                        if(((client==m->c1&&m->g->turn==0)||(client==m->c2&&m->g->turn==1))&&m->finished==0){
                            
                            play(client,buffer,matchs);
                         }
+                        break;
+
+
+                     case 5 : //fin de partie 
+
+                        client->state=0;
                         
 
                         break;
+                     
+                     case 6 : //choisir une partie à regarder
+
+                        specGame(matchs,atoi(buffer),client,actual_match);
 
 
                      default :
@@ -240,7 +252,7 @@ void play(Client * c,char* buffer,Match* matchs){
             write_client(m->c1->sock,game_printBoard(m->g));
             write_client(m->c2->sock,game_printBoard(m->g));            
             for(int i=0;i<(m->nb_spectators);i++){
-               write_client(m->spectators[i].sock,game_printBoard(m->g));
+               write_client(m->spectators[i]->sock,game_printBoard(m->g));
             }
          }else{
             m->g->turn=0;
@@ -249,36 +261,45 @@ void play(Client * c,char* buffer,Match* matchs){
             write_client(m->c1->sock,game_printBoard(m->g));
             write_client(m->c2->sock,game_printBoard(m->g));
             for(int i=0;i<(m->nb_spectators);i++){
-               write_client(m->spectators[i].sock,game_printBoard(m->g));
+               write_client(m->spectators[i]->sock,game_printBoard(m->g));
             }
          }
       }else if(res==1||res==2){
+
          char winner[2];
          sprintf(winner, "%d", res);
          
          write_client(m->c1->sock,game_printBoard(m->g));
          write_client(m->c2->sock,game_printBoard(m->g));
          for(int i=0;i<(m->nb_spectators);i++){
-            write_client(m->spectators[i].sock,game_printBoard(m->g));
-            write_client(m->spectators[i].sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+            write_client(m->spectators[i]->sock,game_printBoard(m->g));
+            write_client(m->spectators[i]->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+            m->spectators[i]->state=0;
+            show_menu(m->spectators[i]);
          }
          
          write_client(m->c1->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
          write_client(m->c2->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+
          m->c1->state=5;
          m->c2->state=5;
+         remove_match(matchs,c->index_actual_game,&actual_match);
       }
       else{
          write_client(m->c1->sock,game_printBoard(m->g));
          write_client(m->c2->sock,game_printBoard(m->g));
          for(int i=0;i<(m->nb_spectators);i++){
-            write_client(m->spectators[i].sock,game_printBoard(m->g));
-            write_client(m->spectators[i].sock,"Egalité\n");
+            write_client(m->spectators[i]->sock,game_printBoard(m->g));
+            write_client(m->spectators[i]->sock,"Egalité\n");
+            m->spectators[i]->state=0;
+            show_menu(m->spectators[i]);
          }
          write_client(m->c1->sock,"Egalité\n");
          write_client(m->c2->sock,"Egalité\n");
          m->c1->state=5;
          m->c2->state=5;
+         m->finished=1;
+         remove_match(matchs,c->index_actual_game,&actual_match);
       }
    }else{
       if(m->g->turn==0){
@@ -335,12 +356,33 @@ static void clear_clients(Client *clients, int actual)
    }
 }
 
+void specGame(Match* matchs,int index_match,Client* c,int actual_match){
+   if(index_match>=actual_match){
+      write_client(c->sock,"Partie inexistante, choisissez en une autre\n");
+   }else{
+      int nb_spec=matchs[index_match].nb_spectators;
+      matchs[index_match].spectators[nb_spec]=c;
+      matchs[index_match].nb_spectators++;
+      c->state=7;
+   }
+}
+
 static void remove_client(Client *clients, int to_remove, int *actual)
 {
    /* we remove the client in the array */
    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
    /* number client - 1 */
    (*actual)--;
+}
+
+void remove_match(Match* matchs, int to_remove, int* actual_match){
+   memmove(matchs + to_remove, matchs + to_remove + 1, (*actual_match - to_remove - 1) * sizeof(Match));
+   (*actual_match)--;
+}
+
+void remove_spectator(Client** spectators, int to_remove, int* actual_spectator){
+   memmove(spectators + to_remove, spectators + to_remove + 1, (*actual_spectator - to_remove - 1) * sizeof(Client*));
+   (*actual_spectator)--;
 }
 
 static void send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server)
@@ -451,6 +493,7 @@ Match* match_create(Client* client1,Client* client2,Game* game){
 
         objet->g=game;
         objet->nb_spectators=0;
+        objet->finished=0;
 
 
     }
