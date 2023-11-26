@@ -147,12 +147,12 @@ static void app(void)
 
                      case 3 : //répond à une demande de défi
 
-                        if(strcmp("1",buffer)){
+                        if(strcmp("1",buffer)==0){
                               
                               matchs[actual_match]=init_match(client,client->opponent,actual_match);
                               actual_match++;
 
-                        }else if(strcmp("2",buffer)){
+                        }else if(strcmp("2",buffer)==0){
 
                               reject(client,client->opponent);
 
