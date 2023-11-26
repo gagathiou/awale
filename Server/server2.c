@@ -4,7 +4,125 @@
 #include <string.h>
 
 #include "server2.h"
+#include "server2.h"
+#include "client2.h"
+#include "player.h"
+#include "game.h"
 
+
+#define MAX_LENGTH 100
+
+typedef struct {
+    char pseudo[MAX_LENGTH];
+    char password[MAX_LENGTH];
+} Credential;
+
+int isPseudoTaken(const char *pseudo, FILE *file) {
+    Credential user;
+    rewind(file);
+    while (fscanf(file, "%s", user.pseudo) == 1) {
+        if (strcmp(user.pseudo, pseudo) == 0) { return 1; }  // Pseudo already taken
+    }
+    return 0;  // Pseudo available
+}
+
+int connection_inscription(int menu, char * buffer, char * password, int csock){
+
+    int i;
+    int authSuccess = 0;
+    Credential cred, user;
+
+    FILE *file = fopen("credentials.txt", "r+");  
+    if (file == NULL) {
+      perror("Error opening the file.");
+     return 0;
+    }
+
+    write_client(csock,"Hi, welcome to Awale.\nPlease login [1] or create an account [2].");
+    read_client(csock, buffer);  //securité à mettre ?
+    i = atoi(buffer);
+
+    if (i == 1) {
+      menu = 1;
+      while (menu == 1) {
+         write_client(csock,"Please enter your pseudo : ");
+         read_client(csock, buffer);
+         write_client(csock,"Welcome ! ");
+         write_client(csock,"Please enter your password : ");
+         read_client(csock, password);
+
+         rewind(file);
+         while (fscanf(file, "%s %s", cred.pseudo, cred.password) == 2) {
+            if (strcmp(buffer, cred.pseudo) == 0 && strcmp(password, cred.password) == 0) {
+               authSuccess = 1;
+                 break;
+               }
+         }
+            
+         if (authSuccess == 0) {
+             write_client(csock,"Your identification did not work.");
+         } else {
+            write_client(csock,"Your identification worked !");
+             menu = 3;
+         }
+      }
+   } else if (i == 2) {
+      do {
+         write_client(csock,"Enter your pseudo : ");
+         read_client(csock, user.pseudo);
+
+         if (isPseudoTaken(user.pseudo, file) != 0) {
+            write_client(csock,"This pseudo is already taken. Please choose another.\n");
+         }else{ menu = 2;}
+      } while (menu !=2);
+         write_client(csock,"Enter your password : ");
+         read_client(csock, user.password);
+
+         fseek(file, 0, SEEK_END);  
+         if (fprintf(file, "\n%s %s", user.pseudo, user.password) < 0) {
+            perror("Error writing to the file.");
+            exit(EXIT_FAILURE);
+         }
+        
+         strcpy(buffer, user.pseudo);
+         strcpy(password, user.password);
+         write_client(csock,"Your inscription worked !\n");
+         menu = 3;
+      }else{
+         write_client(csock,"You chose an out-of-range option.\n");
+      }
+
+   fclose(file);
+   return menu;
+}
+
+void afficherBio(const char *pseudo,char * buffer,int csock) {
+   const char *fichier = "bio.txt";
+   FILE *fichier_ptr = fopen(fichier, "r");
+   if (fichier_ptr == NULL) {
+      perror("Error opening the file.");
+      exit(EXIT_FAILURE);
+   }
+   char ligne[MAX_LENGTH];
+
+   while (fgets(ligne, sizeof(ligne), fichier_ptr) != NULL) {
+      char *token = strtok(ligne, " ");
+      if (token != NULL) {
+         if (strcmp(token, pseudo) == 0) {
+            token = strtok(NULL, "");
+            if (token != NULL) {
+               write_client(csock,"Here is the biography.");
+               write_client(csock,pseudo);
+               write_client(csock,token);
+               fclose(fichier_ptr);
+               return;
+            }
+         }
+      }
+   }
+   write_client(csock,"Pseudo not found.");
+   fclose(fichier_ptr);
+}
 
 static void init(void)
 {
@@ -88,6 +206,12 @@ static void app(void)
             continue;
          }
 
+         printf("----");
+         int i;
+         char *password = malloc(64 * sizeof(char));
+         int menu = connection_inscription(0, buffer, password,csock);
+         afficherBio("agathe",buffer,csock);
+         
          /* what is the new maximum fd ? */
          max = csock > max ? csock : max;
 
