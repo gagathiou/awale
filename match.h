@@ -16,6 +16,8 @@ typedef struct{
     Game* game;
     Client* c1;
     Client* c2;
+    Client spectators[MAX_CLIENTS];
+    int nb_spectators;
 } Match;
 
 // Function prototypes related to Game

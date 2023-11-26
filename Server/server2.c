@@ -121,6 +121,9 @@ static void app(void)
                }
                else
                {
+                  char* etat[10];
+                  sprintf(etat, "%d", client->state);
+                  write_client(client->sock,etat);
                   switch(client->state){
 
                      case 0 : //menu de sélection
@@ -162,7 +165,12 @@ static void app(void)
 
                      case 4 : //en partie
                         Match* m = &(matchs[client->index_actual_game]);
+                        int connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
+                           if(connection!=2){
+                              surrender(client);
+                           }
                         if((client==m->c1&&m->g->turn==0)||(client==m->c2&&m->g->turn==1)){
+                           
                            play(client,buffer,matchs);
                         }
                         
@@ -205,10 +213,17 @@ Match init_match(Client* c1, Client* c2,int actual_game){
    Match* m=match_create(c1,c2,g);
 
    write_client(m->c1->sock,game_printBoard(g));
+   write_client(m->c2->sock,game_printBoard(g));
    write_client(m->c2->sock,"En attente du coup de l'autre joueur\n");
 
    return *m;
 
+}
+
+void surrender(Client* c){
+   write_client(c->sock,"Votre adversaire s'est déconnecté, appuyez sur n'importe quelle touche pour retourner au menu\n");
+   c->state=0;
+   show_menu(c);
 }
 
 void play(Client * c,char* buffer,Match* matchs){
@@ -221,21 +236,47 @@ void play(Client * c,char* buffer,Match* matchs){
          if(m->g->turn==0){
             m->g->turn=1;
             write_client(m->c1->sock,"En attente du coup de l'autre joueur\n");
-            write_client(m->c2->sock,game_printBoard(m->g));
+            write_client(m->c2->sock,"A vous de jouer (nombre entre 6 et 11)\n");
+            write_client(m->c1->sock,game_printBoard(m->g));
+            write_client(m->c2->sock,game_printBoard(m->g));            
+            for(int i=0;i<(m->nb_spectators);i++){
+               write_client(m->spectators[i].sock,game_printBoard(m->g));
+            }
          }else{
             m->g->turn=0;
+            write_client(m->c1->sock,"A vous de jouer (nombre entre 0 et 5)\n");
             write_client(m->c2->sock,"En attente du coup de l'autre joueur\n");
             write_client(m->c1->sock,game_printBoard(m->g));
+            write_client(m->c2->sock,game_printBoard(m->g));
+            for(int i=0;i<(m->nb_spectators);i++){
+               write_client(m->spectators[i].sock,game_printBoard(m->g));
+            }
          }
       }else if(res==1||res==2){
          char winner[2];
          sprintf(winner, "%d", res);
+         
+         write_client(m->c1->sock,game_printBoard(m->g));
+         write_client(m->c2->sock,game_printBoard(m->g));
+         for(int i=0;i<(m->nb_spectators);i++){
+            write_client(m->spectators[i].sock,game_printBoard(m->g));
+            write_client(m->spectators[i].sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+         }
+         
          write_client(m->c1->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
+         write_client(m->c2->sock,strcat(strcat("Le gagnant est le joueur ",winner),"\n"));
          m->c1->state=5;
          m->c2->state=5;
       }
       else{
+         write_client(m->c1->sock,game_printBoard(m->g));
+         write_client(m->c2->sock,game_printBoard(m->g));
+         for(int i=0;i<(m->nb_spectators);i++){
+            write_client(m->spectators[i].sock,game_printBoard(m->g));
+            write_client(m->spectators[i].sock,"Egalité\n");
+         }
          write_client(m->c1->sock,"Egalité\n");
+         write_client(m->c2->sock,"Egalité\n");
          m->c1->state=5;
          m->c2->state=5;
       }
@@ -258,6 +299,8 @@ void reject(Client* c1, Client* c2){
 }
 
 void defy(Client* clients,Client* c, const char* buffer, int actual){
+
+   printf("appel a defy\n");
 
    for (int i=0;i<actual;i++){
       if(strcmp(clients[i].name,buffer)==0){
@@ -381,6 +424,15 @@ static void write_client(SOCKET sock, const char *buffer)
    }
 }
 
+int checkConnected(Client* c,Client* clients,int actual){
+   for(int i=0;i<actual;i++){
+      if ((clients+i)==c){
+         return 1;
+      }
+   }
+   return 0;
+}
+
 Match* match_create(Client* client1,Client* client2,Game* game){
     Match* objet = (Match*)malloc(sizeof(Match));
 
@@ -398,6 +450,7 @@ Match* match_create(Client* client1,Client* client2,Game* game){
         }
 
         objet->g=game;
+        objet->nb_spectators=0;
 
 
     }

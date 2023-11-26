@@ -40,6 +40,8 @@ typedef struct{
     Game* g;
     Client* c1;
     Client* c2;
+    Client spectators[MAX_CLIENTS];
+    int nb_spectators;
 } Match;
 
 static void init(void);
@@ -59,5 +61,7 @@ void match_destroy(Match* objet);
 Match init_match(Client* c1, Client* c2,int actual_game);
 void reject(Client* c1, Client* c2);
 void play(Client * c,char* buffer,Match* matchs);
+int checkConnected(Client* c,Client* clients,int actual);
+void surrender(Client* c);
 
 #endif /* guard */
