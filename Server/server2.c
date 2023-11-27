@@ -286,9 +286,9 @@ static void app(void)
                      case 0 : //menu de sélection
 
                         if(strcmp("1",buffer)==0){
-                           client->state=1;
+                           client->state=8;
                            write_client(client->sock,"Ecrivez le pseudo que vous voulez défier");
-                           defy(clients,client,buffer,actual);
+                           
                         }else if(strcmp("2",buffer)==0){
                            listMatchs(matchs,client,actual_match);
                         } else if(strcmp("3",buffer)==0){
@@ -304,7 +304,7 @@ static void app(void)
                      case 1 : //en attente de la réponse de l'adversaire
 
                         if(checkConnected(client->opponent,clients,actual)==0){
-                           surrender(client);
+                           disconnect(client);
                         }
 
                         break;
@@ -312,7 +312,7 @@ static void app(void)
                      case 2 : //répond à une demande de défi
 
                         if(checkConnected(client->opponent,clients,actual)==0){
-                           surrender(client);
+                           disconnect(client);
                         }
                         else{
                            if(strcmp("1",buffer)==0){
@@ -334,7 +334,7 @@ static void app(void)
                         connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
                         if(connection!=2){
                               printf("dedans\n");
-                              surrender(client);
+                              disconnect(client);
                         }
 
                         if(((client==m->c1&&m->g->turn==0)||(client==m->c2&&m->g->turn==1))){
@@ -374,6 +374,22 @@ static void app(void)
                      case 17: 
                         write_message(clients,client,buffer,actual);
                         break;
+                     case 7: //decide if it want to end the game
+                        
+                        if(strcmp("Y",buffer)){
+                           answerOfferEndGame(matchs,&(matchs[client->index_actual_game]),client,1,actual_match);
+                        }else if(strcmp("N",buffer)){
+                           answerOfferEndGame(matchs,&(matchs[client->index_actual_game]),client,0,actual_match);
+                        }
+
+                        break;
+
+                     case 8:
+
+                        defy(clients,client,buffer,actual);
+
+                        break;
+
 
                      default :
 
@@ -401,8 +417,8 @@ void show_menu(Client* client){
 
 Match init_match(Client* c1, Client* c2,int actual_game){
 
-   c1->state=4;
-   c2->state=4;
+   c1->state=3;
+   c2->state=3;
    c1->index_actual_game=actual_game;
    c2->index_actual_game=actual_game;
 
@@ -419,7 +435,7 @@ Match init_match(Client* c1, Client* c2,int actual_game){
 
 }
 
-void surrender(Client* c){
+void disconnect(Client* c){
    write_client(c->sock,"Votre adversaire s'est déconnecté, appuyez sur n'importe quelle touche pour retourner au menu\n");
    c->opponent=NULL;
    c->state=0;
@@ -430,8 +446,9 @@ void play(Client * c,char* buffer,Match* matchs,int actual_match){
 
    if(strcmp("resign",buffer)==0){
       resign(&(matchs[c->index_actual_game]),c,c->opponent);
+   }else if(strcmp("end",buffer)==0){
+      offerEndGame(c);
    }else{
-
    
    Match* m=&(matchs[c->index_actual_game]);
    int move=atoi(buffer);
@@ -478,14 +495,16 @@ void play(Client * c,char* buffer,Match* matchs,int actual_match){
          write_client(m->c1->sock,res);
          write_client(m->c2->sock,res);
 
+         remove_match(matchs,c->index_actual_game,&actual_match);
+
          m->c1->index_actual_game=-1;
          m->c2->index_actual_game=-1;
-         m->c1->state=5;
-         m->c2->state=5;
+         m->c1->state=4;
+         m->c2->state=4;
          m->c1->opponent=NULL;
          m->c2->opponent=NULL;
 
-         remove_match(matchs,c->index_actual_game,&actual_match);
+         
       }
       else{
          write_client(m->c1->sock,game_printBoard(m->g));
@@ -498,14 +517,15 @@ void play(Client * c,char* buffer,Match* matchs,int actual_match){
          }
          write_client(m->c1->sock,"Egalité\n");
          write_client(m->c2->sock,"Egalité\n");
-         m->c1->state=5;
-         m->c2->state=5;
+         remove_match(matchs,c->index_actual_game,&actual_match);
+         m->c1->state=4;
+         m->c2->state=4;
          m->c1->index_actual_game=-1;
          m->c2->index_actual_game=-1;
          m->c1->opponent=NULL;
          m->c2->opponent=NULL;
          
-         remove_match(matchs,c->index_actual_game,&actual_match);
+         
       }
    }else{
       if(m->g->turn==0){
@@ -536,8 +556,8 @@ void resign(Match* m,Client* resigner,Client* opponent){
    printf("ca imprime\n");
    opponent->opponent=NULL;
    resigner->opponent=NULL;
-   opponent->state=5;
-   resigner->state=5;
+   opponent->state=4;
+   resigner->state=4;
    m->c1->index_actual_game=-1;
    m->c2->index_actual_game=-1;
 
@@ -559,14 +579,14 @@ void defy(Client* clients,Client* c, const char* buffer, int actual){
             char res[1075];
             snprintf(res,sizeof(res),"%s%s",c->name," vous a défié, 1 pour accepter et 2 pour refuser\n");
             write_client(clients[i].sock,res);
-            clients[i].state=3;
+            clients[i].state=2;
             clients[i].opponent=c;
             c->opponent=&(clients[i]);
             break;
          }
       }
    }
-   if(c->state==1){
+   if(c->state==7){
       write_client(c->sock,"Le client n'existe pas ou n'est pas connecté, retour au menu\n");
       c->state=0;
       show_menu(c);      
@@ -590,7 +610,7 @@ void specGame(Match* matchs,int index_match,Client* c,int actual_match){
       matchs[index_match].spectators[nb_spec]=c;
       matchs[index_match].nb_spectators++;
       c->index_actual_game=index_match;
-      c->state=7;
+      c->state=6;
    }
 }
 
@@ -600,13 +620,14 @@ void listMatchs(Match* matchs, Client* c,int actual_game){
       write_client(c->sock,"Pas de partie en cours\n");
       show_menu(c);
 
-   }
-   for(int i=0;i<actual_game;i++){
-      char result[2070];
-      snprintf(result, sizeof(result), "%s%d%s%s%s%s%s", "Partie ", i, " opposant ",
-             matchs[i].c1->name, " à ", matchs[i].c2->name, "\n");
-      write_client(c->sock,result);
-      c->state=6;
+   }else{
+      for(int i=0;i<actual_game;i++){
+         char result[2070];
+         snprintf(result, sizeof(result), "%s%d%s%s%s%s%s", "Partie ", i, " opposant ",
+               matchs[i].c1->name, " à ", matchs[i].c2->name, "\n");
+         write_client(c->sock,result);
+         c->state=5;
+      }
    }
    
 }
@@ -625,10 +646,45 @@ void stopSpecGame(Match* matchs, Client* c){
    show_menu(c);
 }
 
-void offerEndGame(Match* m, Client* c){
+void offerEndGame( Client* c){
 
+   write_client(c->opponent->sock,"Votre adversaire veut arrêter la partie [Y/N]\n");
+   write_client(c->sock,"Waiting for your opponent's answer\n");
+   c->opponent->state=7;
    
-   
+}
+
+void answerOfferEndGame(Match* matchs,Match* m, Client* c, int stop,int actual_match){
+
+   printf("%d\n",stop);
+   if(stop==0){
+      write_client(c->opponent->sock,"Opponent refused to end the game, please continue to play\n");
+      write_client(c->opponent->sock,game_printBoard(m->g));
+      write_client(c->sock,"You refused to end the game, waiting for your opponent to play a move\n");
+      c->state=3;
+   }else{
+      write_client(c->opponent->sock,"Opponent accepted to end the game\n");
+      write_client(c->sock,"You accepted to end the game\n");
+      int winner=game_biggestScore(m->g);
+      if(winner==0){
+         write_client(c->sock,"Draw\n");
+         write_client(c->opponent->sock,"Draw\n");
+      }else{
+         char res[200];
+         snprintf(res,sizeof(res),"%s%d\n","Winner is Player ",winner);
+         write_client(c->sock,res);
+         write_client(c->opponent->sock,res);
+      }
+      c->state=4;
+      c->opponent->state=4;
+      
+      remove_match(matchs,c->index_actual_game,&actual_match);
+      c->index_actual_game=-1;
+      c->opponent->index_actual_game=-1;
+      c->opponent->opponent=NULL;
+      c->opponent=NULL;
+
+   }
 }
 
 static void remove_client(Client *clients, int to_remove, int *actual)

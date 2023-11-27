@@ -24,5 +24,6 @@ void game_playMove(Game *game, int move);
 bool game_isLegalMove(Game *game, int move);
 char *game_printBoard(Game *game);
 int game_isFinished(Game *game);
+int game_biggestScore(Game* g);
 
 #endif // GAME_H
