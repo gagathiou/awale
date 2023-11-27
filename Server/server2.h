@@ -69,5 +69,6 @@ void stopSpecGame(Match* matchs, Client* c);
 void remove_match(Match* matchs, int to_remove, int* actual_match);
 void remove_spectator(Client** spectators, int to_remove, int* actual_spectator);
 void listMatchs(Match* matchs, Client* c,int actual_game);
+void resign(Match* m,Client* resigner,Client* opponent);
 
 #endif /* guard */

@@ -139,7 +139,6 @@ bool game_isLegalMove(Game* game, int move) { //playerId à 0 si p1 et 1 si p2
 }
 
 
-
 int game_isFinished(Game* game){ //retourne 0 si la partie n'est pas finie, 1 si p1 a gagné et 2 si p2 a gagné et 3 si égalité, playerId correspond au joueur qui va jouer
     bool lineEmpty=true;
     int res=0;
