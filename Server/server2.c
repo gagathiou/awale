@@ -618,6 +618,14 @@ void stopSpecGame(Match* matchs, Client* c){
    show_menu(c);
 }
 
+void offerEndGame(Match* m, Client* c){
+
+   write_client(c->opponent->sock,"Votre adversaire veut arrêter la partie [Y/N]\n");
+   write_client(c->sock,"Waiting for your opponent's answer\n");
+   c->opponent->state=
+   
+}
+
 static void remove_client(Client *clients, int to_remove, int *actual)
 {
    /* we remove the client in the array */
