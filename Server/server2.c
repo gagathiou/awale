@@ -7,6 +7,7 @@
 #include "client2.h"
 #include "player.h"
 #include "game.h"
+#include "Chat.h"
 
 
 #define MAX_LENGTH 100
@@ -95,7 +96,7 @@ int connection_inscription(int menu, char * buffer, char * password, int csock){
    return menu;
 }
 
-void afficherBio(const char *pseudo,char * buffer,int csock) {
+void afficherBio(const char *pseudo,int csock) {
    const char *fichier = "bio.txt";
    FILE *fichier_ptr = fopen(fichier, "r");
    if (fichier_ptr == NULL) {
@@ -122,6 +123,38 @@ void afficherBio(const char *pseudo,char * buffer,int csock) {
    write_client(csock,"Pseudo not found.");
    fclose(fichier_ptr);
 }
+
+void lets_chat(Client* clients,Client* c, const char* buffer, int actual, int csock){
+   write_client(csock,"Write the pseudo you want to chat with.");
+   char * pseudo = malloc(60*sizeof(char));
+   read_client(csock, pseudo);  //securité à mettre ?
+
+
+   for (int i=0;i<actual;i++){
+      if(strcmp(clients[i].name,buffer)==0){
+         if(clients[i].state!=0){
+            write_client(c->sock,"The player is busy, let's go back to the menu.\n");
+            c->state=0;
+            show_menu(c);
+            break;
+         }else{
+            write_client(csock,"Write your message.");
+            char * message = malloc(60*sizeof(char));
+            read_client(csock, message);  //securité à mettre ?
+            c->state=2;
+            write_client(clients[i].sock,strcat(c->name," sent you a message.\n"));
+            write_client(clients[i].sock,strcat(c->name,message));
+            break;
+         }
+      }
+   }
+   if(c->state==1){
+      write_client(c->sock,"This client doesn't exist or isn't connected, let's go back to the menu.\n");
+      c->state=0;
+      show_menu(c);      
+   }
+}
+
 
 static void init(void)
 {
@@ -210,8 +243,9 @@ static void app(void)
          printf("----");
          int i;
          char *password = malloc(64 * sizeof(char));
-         int menu = connection_inscription(0, buffer, password,csock);
-         afficherBio("agathe",buffer,csock);
+         connection_inscription(0, buffer, password,csock);
+         afficherBio("agathe",csock);
+         //lets_chat(clients,c, buffer, int actual, csock);
 
          /* what is the new maximum fd ? */
          max = csock > max ? csock : max;
