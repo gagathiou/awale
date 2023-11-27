@@ -291,6 +291,7 @@ static void app(void)
                         if(strcmp("1",buffer)==0){
                            client->state=1;
                            write_client(client->sock,"Ecrivez le pseudo que vous voulez défier");
+                           defy(clients,client,buffer,actual);
                         }else if(strcmp("2",buffer)==0){
                            listMatchs(matchs,client,actual_match);
                         }
@@ -298,13 +299,7 @@ static void app(void)
 
                         break;
                      
-                     case 1 : //choisit qui défier
-
-                        defy(clients,client,buffer,actual);
-
-                        break;
-                     
-                     case 2 : //en attente de la réponse de l'adversaire
+                     case 1 : //en attente de la réponse de l'adversaire
 
                         if(checkConnected(client->opponent,clients,actual)==0){
                            surrender(client);
@@ -312,7 +307,7 @@ static void app(void)
 
                         break;
 
-                     case 3 : //répond à une demande de défi
+                     case 2 : //répond à une demande de défi
 
                         if(checkConnected(client->opponent,clients,actual)==0){
                            surrender(client);
@@ -332,7 +327,7 @@ static void app(void)
 
                         break;
 
-                     case 4 : //en partie
+                     case 3 : //en partie
                         m = &(matchs[client->index_actual_game]);
                         connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
                         if(connection!=2){
@@ -347,7 +342,7 @@ static void app(void)
                         break;
 
 
-                     case 5 : //fin de partie 
+                     case 4 : //fin de partie 
 
                         client->state=0;
                         show_menu(client);
@@ -355,12 +350,12 @@ static void app(void)
 
                         break;
                      
-                     case 6 : //choisir une partie à regarder
+                     case 5 : //choisir une partie à regarder
 
                         specGame(matchs,atoi(buffer),client,actual_match);
                         break;
 
-                     case 7: //en train de regarder une partie
+                     case 6: //en train de regarder une partie
 
                         if(strcmp("q",buffer)==0){
                            stopSpecGame(matchs,client);
