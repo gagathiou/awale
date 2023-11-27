@@ -124,11 +124,7 @@ void afficherBio(const char *pseudo,int csock) {
    fclose(fichier_ptr);
 }
 
-void lets_chat(Client* clients,Client* c, const char* buffer, int actual, int csock){
-   write_client(csock,"Write the pseudo you want to chat with.");
-   char * pseudo = malloc(60*sizeof(char));
-   read_client(csock, pseudo);  //securité à mettre ?
-
+void choose_pseudo_to_chat(Client* clients,Client* c, const char* buffer, int actual){
 
    for (int i=0;i<actual;i++){
       if(strcmp(clients[i].name,buffer)==0){
@@ -138,21 +134,22 @@ void lets_chat(Client* clients,Client* c, const char* buffer, int actual, int cs
             show_menu(c);
             break;
          }else{
-            write_client(csock,"Write your message.");
-            char * message = malloc(60*sizeof(char));
-            read_client(csock, message);  //securité à mettre ?
-            c->state=2;
+            c->state=17;
             write_client(clients[i].sock,strcat(c->name," sent you a message.\n"));
-            write_client(clients[i].sock,strcat(c->name,message));
             break;
          }
       }
    }
-   if(c->state==1){
+   if(c->state==16){
       write_client(c->sock,"This client doesn't exist or isn't connected, let's go back to the menu.\n");
       c->state=0;
       show_menu(c);      
    }
+}
+
+void write_message(Client* clients,Client* c, const char* buffer, int actual){
+
+   printf("write message");
 }
 
 
@@ -294,6 +291,11 @@ static void app(void)
                            defy(clients,client,buffer,actual);
                         }else if(strcmp("2",buffer)==0){
                            listMatchs(matchs,client,actual_match);
+                        } else if(strcmp("3",buffer)==0){
+                           client->state = 16;
+                           write_client(client->sock,"Write the pseudo with who you want to chat.");
+                        }else{
+                           printf("out of range option\n");
                         }
                         
 
@@ -364,6 +366,14 @@ static void app(void)
 
                         break;
 
+                     case 16: // en train d'écrire un pseudo
+                     printf("cas 16\n");
+                        choose_pseudo_to_chat(clients,client,buffer,actual);
+                        break;
+
+                     case 17: 
+                        write_message(clients,client,buffer,actual);
+                        break;
 
                      default :
 
@@ -383,8 +393,10 @@ static void app(void)
 
 void show_menu(Client* client){
 
-   write_client(client->sock,"Veuillez choisir ce que vous voulez faire : \n");
-   write_client(client->sock,"1. Défier quelqu'un\n");
+   write_client(client->sock,"Please chose what you whant to do.\n");
+   write_client(client->sock,"[1] Defy someone.\n");
+   write_client(client->sock,"[2] Assit to a game.\n");
+   write_client(client->sock,"[3] Chat with someone.\n");
 }
 
 Match init_match(Client* c1, Client* c2,int actual_game){
