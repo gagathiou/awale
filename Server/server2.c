@@ -154,6 +154,8 @@ static void app(void)
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
    Match matchs[MAX_CLIENTS];
+   Match* m;
+   int connection;
 
    fd_set rdfs;
 
@@ -290,8 +292,8 @@ static void app(void)
                         break;
 
                      case 4 : //en partie
-                        Match* m = &(matchs[client->index_actual_game]);
-                        int connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
+                        m = &(matchs[client->index_actual_game]);
+                        connection=checkConnected(m->c1,clients,actual)+checkConnected(m->c2,clients,actual);
                         if(connection!=2){
                               printf("dedans\n");
                               surrender(client);
