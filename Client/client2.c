@@ -2,8 +2,19 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <uuid/uuid.h>
 
 #include "client2.h"
+
+
+int create_string_id(char uuid_str[37]) {
+   uuid_t uuid;
+   uuid_generate(uuid);
+   uuid_unparse_lower(uuid, uuid_str);
+   printf("votre id temporaire est: %s\n", uuid_str);
+   printf("fjgjj");
+   return 0;
+}
 
 static void init(void)
 {
@@ -25,7 +36,7 @@ static void end(void)
 #endif
 }
 
-static void app(const char *address, const char *name)
+static void app(const char *address, char *name)
 {
    SOCKET sock = init_connection(address);
    char buffer[BUF_SIZE];
@@ -33,7 +44,11 @@ static void app(const char *address, const char *name)
    fd_set rdfs;
 
    /* send our name */
-   write_server(sock, name);
+   srand((unsigned int)time(NULL));
+   int number = 10 * rand();
+   char nom[20];  
+   snprintf(nom, sizeof(nom), "%d", number);
+   write_server(sock, nom);
 
    while(1)
    {
