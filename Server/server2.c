@@ -618,6 +618,12 @@ void stopSpecGame(Match* matchs, Client* c){
    show_menu(c);
 }
 
+void offerEndGame(Match* m, Client* c){
+
+   
+   
+}
+
 static void remove_client(Client *clients, int to_remove, int *actual)
 {
    /* we remove the client in the array */
